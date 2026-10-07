@@ -40,6 +40,7 @@
             -webkit-appearance: none;
             width: 100%;
             background: transparent;
+            touch-action: manipulation;
         }
         input[type=range]:focus {
             outline: none;
@@ -428,9 +429,9 @@
         };
 
         const INITIAL_SUBJECTS = [
-            "Dasar - Dasar Teknik Energi Terbarukan",
+            "Dasar-Dasar Teknik Energi Terbarukan",
             "Gambar Teknik Listrik",
-            "Kreativitas, Inovasi & Kewirausahaan",
+            "Kreativitas, Inovasi & Kewirausahaan"
         ];
 
         let classData = {};
@@ -593,6 +594,7 @@
                     ? 'bg-slate-100 text-slate-500 border-slate-200' 
                     : (isPass ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-rose-100 text-rose-800 border-rose-300');
                 const kkmText = isAbsent ? 'Tidak Dinilai' : (isPass ? 'TUNTAS' : 'REMEDIAL');
+                const safeStudentName = student.replace(/'/g, "\\'");
 
                 html += `
                     <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm space-y-3 transition hover:shadow-md">
@@ -604,7 +606,7 @@
                                 </span>
                                 <h3 class="font-black text-slate-900 text-lg leading-snug tracking-tight truncate">${student}</h3>
                             </div>
-                            <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full border shrink-0 ${kkmBadgeColor}">
+                            <span id="kkm-badge-${index}" class="text-[10px] font-extrabold px-2.5 py-1 rounded-full border shrink-0 ${kkmBadgeColor}">
                                 ${kkmText}
                             </span>
                         </div>
@@ -619,7 +621,7 @@
                                         : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 font-semibold';
                                     return `
                                         <button type="button" 
-                                                onclick="setAttendance('${student.replace(/'/g, "\\'")}', '${att.id}')" 
+                                                onclick="setAttendance('${safeStudentName}', '${att.id}')" 
                                                 class="py-1.5 rounded-lg text-[11px] transition-all duration-150 flex flex-col items-center justify-center ${btnStyle}">
                                             <span>${att.short}</span>
                                             <span class="text-[8px] opacity-80 hidden sm:inline">${att.label}</span>
@@ -636,20 +638,21 @@
                                     <i class="fa-solid fa-sliders text-emerald-600"></i> Nilai Siswa
                                 </span>
                                 <div class="flex items-center gap-1">
-                                    <span class="text-lg font-black ${isPass ? 'text-emerald-600' : 'text-rose-600'}">${score}</span>
+                                    <span id="score-val-${index}" class="text-lg font-black ${isPass ? 'text-emerald-600' : 'text-rose-600'}">${score}</span>
                                     <span class="text-[10px] text-slate-400 font-semibold">/100</span>
                                 </div>
                             </div>
 
-                            <input type="range" min="0" max="100" step="1" value="${score}" 
-                                   oninput="updateStudentScore('${student.replace(/'/g, "\\'")}', this.value)"
-                                   class="w-full accent-emerald-600">
+                            <input type="range" id="slider-${index}" min="0" max="100" step="1" value="${score}" 
+                                   oninput="handleSliderInput(${index}, '${safeStudentName}', this.value)"
+                                   onchange="saveCurrentDataToCache()"
+                                   class="w-full accent-emerald-600 cursor-pointer">
 
                             <!-- Preset Quick Value Buttons -->
                             <div class="flex justify-between gap-1 pt-1">
                                 ${[60, 70, currentKKM, 80, 85, 90, 100].map(val => `
-                                    <button type="button" onclick="updateStudentScore('${student.replace(/'/g, "\\'")}', ${val})"
-                                            class="flex-1 py-1 rounded text-[10px] font-extrabold ${score == val ? 'bg-emerald-600 text-white' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'}">
+                                    <button type="button" onclick="updateStudentScore('${safeStudentName}', ${index}, ${val})"
+                                            class="flex-1 py-1 rounded text-[10px] font-extrabold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100">
                                         ${val}
                                     </button>
                                 `).join('')}
@@ -661,7 +664,59 @@
 
             container.innerHTML = html;
 
-            // Calculate class average
+            updateClassAverage();
+        }
+
+        function handleSliderInput(index, student, val) {
+            const numericVal = parseInt(val) || 0;
+            if (!currentScores[student]) {
+                currentScores[student] = { attendance: 'Hadir', score: 75 };
+            }
+            currentScores[student].score = numericVal;
+
+            // Update nilai angka & warna langsung secara instant tanpa merestart element
+            const scoreValEl = document.getElementById(`score-val-${index}`);
+            const isPass = numericVal >= currentKKM;
+
+            if (scoreValEl) {
+                scoreValEl.textContent = numericVal;
+                scoreValEl.className = `text-lg font-black ${isPass ? 'text-emerald-600' : 'text-rose-600'}`;
+            }
+
+            // Update badge KKM
+            const badgeEl = document.getElementById(`kkm-badge-${index}`);
+            if (badgeEl && currentScores[student].attendance === 'Hadir') {
+                badgeEl.textContent = isPass ? 'TUNTAS' : 'REMEDIAL';
+                badgeEl.className = `text-[10px] font-extrabold px-2.5 py-1 rounded-full border shrink-0 ${isPass ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-rose-100 text-rose-800 border-rose-300'}`;
+            }
+
+            updateClassAverage();
+            saveCurrentDataToCache();
+        }
+
+        function updateStudentScore(student, index, val) {
+            const numericVal = parseInt(val) || 0;
+            const sliderEl = document.getElementById(`slider-${index}`);
+            if (sliderEl) {
+                sliderEl.value = numericVal;
+            }
+            handleSliderInput(index, student, numericVal);
+        }
+
+        function updateClassAverage() {
+            const classVal = document.getElementById('selectClass').value;
+            const students = classData[classVal] || [];
+            let totalScore = 0;
+            let gradedCount = 0;
+
+            students.forEach(student => {
+                const data = currentScores[student];
+                if (data && data.attendance === 'Hadir') {
+                    totalScore += (data.score || 0);
+                    gradedCount++;
+                }
+            });
+
             const avg = gradedCount > 0 ? (totalScore / gradedCount).toFixed(1) : '0';
             document.getElementById('classAverageScore').textContent = avg;
         }
