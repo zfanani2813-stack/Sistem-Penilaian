@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistem Penilaian - Zaenul Fanani</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f1f5f9;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Range slider custom styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 10px;
+            cursor: pointer;
+            background: #e2e8f0;
+            border-radius: 9999px;
+            border: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #16a34a;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -7px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 2px solid white;
+            transition: transform 0.1s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:active {
+            transform: scale(1.15);
+        }
+        /* Custom scrollbar for mobile lists */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 flex justify-center min-h-screen">
+
+    <!-- Mobile Main App Container (Portrait Mode Frame) -->
+    <div class="w-full max-w-md bg-white min-h-screen flex flex-col shadow-2xl relative pb-28">
+        
+        <!-- Header Section -->
+        <header class="bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 text-white p-5 rounded-b-3xl shadow-lg relative">
+            <div class="flex justify-between items-start mb-2">
+                <div>
+                    <h1 class="text-2xl font-extrabold tracking-tight flex items-center gap-2">
+                        <i class="fa-solid fa-graduation-cap text-yellow-300"></i> Sistem Penilaian
+                    </h1>
+                    <p class="text-xs text-emerald-100 font-medium tracking-wide mt-0.5">
+                        <i class="fa-solid fa-user-tie text-emerald-200 mr-1"></i> Zaenul Fanani
+                    </p>
+                </div>
+                <button onclick="openSettingsModal()" class="p-2.5 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-full text-white transition backdrop-blur-sm" title="Pengaturan Data">
+                    <i class="fa-solid fa-gear text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- Quick Info Bar -->
+            <div class="mt-4 bg-emerald-900/40 backdrop-blur-md rounded-2xl p-3 text-xs flex justify-between items-center border border-emerald-400/20">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-day text-emerald-300"></i>
+                    <span id="headerDateDisplay" class="font-semibold">Hari ini</span>
+                </div>
+                <div id="statusBadge" class="bg-yellow-400/20 text-yellow-200 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                    <i class="fa-solid fa-pen"></i> Mode Input
+                </div>
+            </div>
+        </header>
+
+        <!-- Form Control Section -->
+        <main class="p-4 flex-grow space-y-4">
+            
+            <!-- Filter & Setup Card -->
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
+                
+                <!-- Date Picker -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">
+                        <i class="fa-regular fa-calendar text-emerald-600 mr-1"></i> Tanggal Penilaian
+                    </label>
+                    <input type="date" id="inputDate" onchange="handleDateOrClassChange()"
+                           class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
+                </div>
+
+                <!-- Class & Mapel Row -->
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Class Selector -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">
+                            <i class="fa-solid fa-users text-emerald-600 mr-1"></i> Pilih Kelas
+                        </label>
+                        <select id="selectClass" onchange="handleDateOrClassChange()"
+                                class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+
+                    <!-- Mapel Selector -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">
+                            <i class="fa-solid fa-book text-emerald-600 mr-1"></i> Mata Pelajaran
+                        </label>
+                        <select id="selectSubject" onchange="handleDateOrClassChange()"
+                                class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- KKM Standard Input -->
+                <div class="flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-200">
+                    <span class="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                        <i class="fa-solid fa-bullseye text-red-500"></i> Batas KKM:
+                    </span>
+                    <div class="flex items-center gap-2">
+                        <input type="number" id="inputKKM" value="75" min="0" max="100" onchange="updateKKM(this.value)"
+                               class="w-16 text-center font-extrabold text-sm text-emerald-700 bg-emerald-50 border border-emerald-300 rounded-lg py-1 focus:ring-2 focus:ring-emerald-500">
+                        <span class="text-xs text-slate-400 font-semibold">/100</span>
+                    </div>
+                </div>
+
+                <!-- Activity Description Textarea -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">
+                        <i class="fa-solid fa-align-left text-emerald-600 mr-1"></i> Keterangan Kegiatan Penilaian
+                    </label>
+                    <textarea id="inputActivity" rows="2" placeholder="Contoh: Ulangan Harian Bab 2, Praktik Instalasi Motor, Diskusi Kelompok..."
+                              oninput="saveCurrentDataToCache()"
+                              class="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm resize-none"></textarea>
+                </div>
+            </div>
+
+            <!-- Auto-Load Alert Banner -->
+            <div id="autoLoadBanner" class="hidden bg-amber-50 border border-amber-300 rounded-xl p-3 text-xs text-amber-800 flex items-center justify-between shadow-sm animate-fade-in">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-amber-600 text-base"></i>
+                    <div>
+                        <p class="font-bold">Data Sebelumnya Dimuat</p>
+                        <p class="text-[11px] text-amber-700">Telah tersimpan nilai pada tanggal ini. Perubahan akan mengupdate data.</p>
+                    </div>
+                </div>
+                <button onclick="resetCurrentScores()" class="text-[10px] bg-amber-200 hover:bg-amber-300 text-amber-900 font-bold px-2 py-1 rounded-lg">
+                    Reset
+                </button>
+            </div>
+
+            <!-- Fitur Set Semua Nilai Siswa (Manual Input Ringkas) -->
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 shadow-sm">
+                <div class="flex items-center justify-between gap-2">
+                    <label class="text-xs font-extrabold text-slate-700 flex items-center gap-1.5 shrink-0">
+                        <i class="fa-solid fa-wand-magic-sparkles text-emerald-600 text-sm"></i> Set Semua Nilai:
+                    </label>
+                    <div class="flex items-center gap-1.5 flex-grow max-w-[200px]">
+                        <input type="number" id="inputBulkScore" placeholder="Nilai (0-100)" min="0" max="100"
+                               class="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm text-center">
+                        <button type="button" onclick="applyManualBulkScore()" class="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 shadow-sm transition">
+                            Terapkan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student List Header & Counter -->
+            <div class="flex justify-between items-center px-1 pt-2">
+                <h2 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-address-book text-emerald-600"></i> Daftar Siswa
+                    <span id="studentCountBadge" class="bg-emerald-100 text-emerald-800 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                </h2>
+                <div class="text-xs text-slate-500 font-medium">
+                    Rata-rata: <span id="classAverageScore" class="font-bold text-emerald-600">0</span>
+                </div>
+            </div>
+
+            <!-- Student List Vertical Stack -->
+            <div id="studentListContainer" class="space-y-3">
+                <!-- Dynamic Student Cards Rendered Here -->
+            </div>
+
+        </main>
+
+        <!-- Bottom Floating Action Bar -->
+        <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200 p-3 shadow-2xl z-20 rounded-t-2xl">
+            <div class="grid grid-cols-2 gap-2">
+                <!-- WA Share Button -->
+                <button onclick="shareToWhatsApp()" class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold py-3 px-4 rounded-xl shadow-md transition text-xs">
+                    <i class="fa-brands fa-whatsapp text-lg"></i>
+                    <span>Share WA</span>
+                </button>
+
+                <!-- Send to Google Spreadsheet Button -->
+                <button onclick="sendToSpreadsheet()" id="btnSendSpreadsheet" class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl shadow-md transition text-xs">
+                    <i class="fa-solid fa-file-excel text-lg"></i>
+                    <span>Kirim Spreadsheet</span>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal Settings & Data Management -->
+    <div id="settingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+            <!-- Modal Header -->
+            <div class="bg-slate-800 text-white p-4 flex justify-between items-center">
+                <h3 class="font-bold text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-emerald-400"></i> Pengaturan & Kelola Data
+                </h3>
+                <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body Tabs -->
+            <div class="p-4 flex-grow overflow-y-auto space-y-5 text-xs">
+                
+                <!-- Tab Controls -->
+                <div class="flex border-b border-slate-200 mb-2">
+                    <button id="tabBtn1" onclick="switchModalTab('students')" class="py-2 px-3 font-bold border-b-2 border-emerald-600 text-emerald-600 flex-1 text-center">
+                        <i class="fa-solid fa-users-gear mr-1"></i> Data Siswa & Kelas
+                    </button>
+                    <button id="tabBtn2" onclick="switchModalTab('subjects')" class="py-2 px-3 font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex-1 text-center">
+                        <i class="fa-solid fa-book-open mr-1"></i> Mapel
+                    </button>
+                    <button id="tabBtn3" onclick="switchModalTab('webhook')" class="py-2 px-3 font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 flex-1 text-center">
+                        <i class="fa-solid fa-link mr-1"></i> Google Sheets
+                    </button>
+                </div>
+
+                <!-- Tab 1: Manage Students and Classes -->
+                <div id="tabStudents" class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <label class="font-bold text-slate-700">Pilih Kelas yang Dikelola:</label>
+                        <button onclick="addNewClassPrompt()" class="bg-emerald-600 text-white px-2.5 py-1 rounded-lg font-bold text-[11px] flex items-center gap-1">
+                            <i class="fa-solid fa-plus"></i> Tambah Kelas
+                        </button>
+                    </div>
+                    <select id="manageClassSelect" onchange="loadStudentsForManagement()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 font-semibold text-slate-800">
+                        <!-- Dynamic options -->
+                    </select>
+
+                    <div class="mt-3">
+                        <label class="block font-bold text-slate-700 mb-1">Tambah Siswa Baru ke Kelas Ini:</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="newStudentName" placeholder="Nama lengkap siswa..." class="flex-grow border border-slate-300 rounded-xl p-2 bg-white">
+                            <button onclick="addStudentToClass()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-xl">
+                                Tambah
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="block font-bold text-slate-700 mb-1">Daftar Siswa Dalam Kelas:</label>
+                        <div id="managedStudentList" class="max-h-52 overflow-y-auto border border-slate-200 rounded-xl divide-y divide-slate-100 bg-white p-1">
+                            <!-- Rendered JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Manage Subjects -->
+                <div id="tabSubjects" class="space-y-3 hidden">
+                    <label class="block font-bold text-slate-700">Tambah Mata Pelajaran Baru:</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="newSubjectName" placeholder="Nama mata pelajaran..." class="flex-grow border border-slate-300 rounded-xl p-2 bg-white">
+                        <button onclick="addSubject()" class="bg-emerald-600 text-white font-bold px-3 py-2 rounded-xl">
+                            Tambah
+                        </button>
+                    </div>
+
+                    <label class="block font-bold text-slate-700 mt-3">Daftar Mata Pelajaran:</label>
+                    <div id="managedSubjectList" class="max-h-52 overflow-y-auto border border-slate-200 rounded-xl divide-y divide-slate-100 bg-white p-1">
+                        <!-- Rendered JS -->
+                    </div>
+                </div>
+
+                <!-- Tab 3: Webhook Google Apps Script Integration -->
+                <div id="tabWebhook" class="space-y-3 hidden">
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 text-blue-900 text-[11px] space-y-1.5">
+                        <p class="font-bold flex items-center gap-1 text-blue-800">
+                            <i class="fa-solid fa-circle-info text-blue-600"></i> Langkah Mengatasi & Koneksi Google Sheets:
+                        </p>
+                        <ol class="list-decimal list-inside space-y-1 text-slate-700 pl-1 leading-relaxed">
+                            <li>Buka file **Google Spreadsheet** Anda.</li>
+                            <li>Klik menu **Ekstensi &gt; Apps Script**.</li>
+                            <li>Hapus semua kode lama, lalu **tempel (paste)** kode baru di bawah.</li>
+                            <li>Klik **Terapkan (Deploy) &gt; Penerapan Baru (New Deployment)**.</li>
+                            <li>Pastikan **Jalankan Sebagai**: <code class="bg-blue-100 text-blue-900 px-1 rounded font-bold">Saya (Me)</code>.</li>
+                            <li>Pastikan **Siapa yang memiliki akses**: <code class="bg-blue-100 text-blue-900 px-1 rounded font-bold">Siapa saja (Anyone)</code> *(Sangat Penting)*.</li>
+                            <li>Klik **Terapkan**, izinkan akses Google (*Allow*), lalu **Salin URL Web App** ke kolom bawah.</li>
+                        </ol>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">URL Web App Google Apps Script:</label>
+                        <input type="url" id="webhookUrlInput" placeholder="https://script.google.com/macros/s/.../exec"
+                               class="w-full border border-slate-300 rounded-xl p-2 bg-white text-xs font-mono">
+                    </div>
+
+                    <button onclick="saveWebhookUrl()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition shadow">
+                        Simpan URL Webhook
+                    </button>
+
+                    <div class="mt-3">
+                        <button onclick="copyAppsScriptCode()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl border border-slate-300 flex items-center justify-center gap-1.5 transition">
+                            <i class="fa-solid fa-code text-slate-600"></i> Salin Kode Google Apps Script Baru (Format Ke Samping)
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="bg-slate-100 p-3 text-right border-t border-slate-200">
+                <button onclick="closeSettingsModal()" class="bg-slate-700 text-white px-4 py-2 rounded-xl font-bold text-xs">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white px-4 py-2.5 rounded-full text-xs font-semibold shadow-2xl opacity-0 pointer-events-none transition-all duration-300 z-50 flex items-center gap-2">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toastMsg">Pesan Notifikasi</span>
+    </div>
+
+    <script>
+        // Default Dataset initialized with provided student roster
+        const INITIAL_CLASSES = {
+            "X TESHA": [
+                "Adli Rehan", "Budiarja", "Daud Perdana", "Erwin Sanjaya", "Halimun Hakim", 
+                "M. Satria Varozy", "M. Yunus", "Muammar Arafat", "Muhamad Aden", 
+                "Rion Anggara Saputra", "Rizwan Affandi"
+            ],
+            "X TK 1": [
+                "Abdul Saefuddin Al-Wahid", "Ahmad Fauzan", "Ahmad Zakaria", "Alvin Rijalul Fiqri", 
+                "Andhika Nurfadilah", "Andrian Pertama", "Beni Aprilidan", "Davilla Zahra Megania Putri", 
+                "Dedi Sukandi", "Habib Alwi", "Intan Nuraini", "Iqbal Maulana", "Khairul Azmi", 
+                "M Nopal Saputra", "M. Saleh Ferdiansyah", "Moh. Putra Alfian", "Muhajirin", 
+                "Muhamad Zakaria", "Muhammad Dapin Aziz", "Muhammad Rifqi Pratama", 
+                "Muhammad Zainul Hikam", "Putri Ananta Zaliyanti", "Radit Gigih Purnama", 
+                "Rafael Efendi", "Rizki Alif Septiawan", "Ronal", "Saiful Fahmi", "Wahjudi", "Zarkasi Irvan"
+            ],
+            "X TK 2": [
+                "Abil Sahputra", "Alvino Rafa Novryan", "Andri Wijaya", "Babus Firdaus", 
+                "Dedi Santuri", "Dimas Falentino", "Faruq Abdul Aziz", "Haekal", 
+                "Halqi Apriyadi Habibullah", "Hazul Azmi", "Irfan Maulana", "Juliadi Adriawan", 
+                "Jumawal", "Kasdi", "Laelatul Hafizah", "Lalu Gading Purnawijaya", "M Fauzan Ibror", 
+                "M. Irfan Ibrahim", "M. Suhendar Hariri", "Mahyudi", "Muhamad Jayadi", 
+                "Muhammad Asrulloh", "Muhammad Azka Akbar", "Noviana", "Raditya Bintang Anugrah", 
+                "Rafa Nabil Putra", "Riki Saputra", "Saiful Azhari", "Sulhan", "Tanto Winata"
+            ],
+            "XI TITL": [
+                "Abdul Muhti", "Argya Al Ghibran Pratama", "Diki Wahyudi", "Firza Wananda", 
+                "Hasan Basri", "Herma Rahma Yulianda", "Ibnu Wathan", "Lalu Ade Dwi Anggian", 
+                "Mahendra Irawan", "Marzuki Ali", "Moh. Haetami", "Muhammad Aditya Juniar", 
+                "Muhammad Reza", "Rizki Pratama", "Suherman", "Tamhiz", "Zihandi Alan Arzaki"
+            ],
+            "XI TJTL": [
+                "Abdul Aziz", "Arip Hidayatullah", "Azan Saputra", "Fairuzzaini", 
+                "Gede Agus Pramasetya", "Haekal Ramdhan", "Lalu Deny Hariadi", "Lalu Panji Wijaya Saputra", 
+                "Lalu Raditya Roni Saputra", "M. Erwin", "M. Ricki Ikbal", "Muh. Alfin Pratama", 
+                "Muh. Raffa Khoirul Azzam", "Muhammad Syahrul Tanzil", "Rio Ferdinand", "Sandi Irawan", "Zadil", "Ruzahan"
+            ],
+            "XI TPTU": [
+                "Ahmad Sabudin", "Aldy", "Andika Santuri", "Bayu Andika", "Fandi Irawan", 
+                "Farizal Hikam", "Fery Firmansyah", "Haekal Azmi", "Hendra Kurniawan", 
+                "Maulana Iqbal", "Muhamad Fikri Al Islami", "Muhamat Saleh", "Muhammad Hadrian", 
+                "Paesal Aziz", "Rama Ramdani", "Riswan", "Efendi"
+            ],
+            "XII TITL": [
+                "Abdul Mukti", "Ahmad Suherman", "Alwani Laika", "Anisa", "Baki Nasuha", 
+                "Baiq Widya Luna Kusuma Dewi", "Bayu Saputra", "Duny Ardika Pratama", 
+                "Fathurrahman", "Lalu Muhammad Aliakbar", "Multazam", "Malik Abdul Aziz", 
+                "Muhajirin", "Muhamad Haekal", "Nurahim", "Selpi Karinsa", "Siti Aisyah", 
+                "Wisnu Ariyanto", "Zahrul", "Yadi Saputra", "Zidan Desta Harianto", "Zul", "Firman"
+            ],
+            "XII TJTL": [
+                "Adrian Trisno", "Agus Gunawan Syahban", "Ahmad Akbar", "Andika Pratama", 
+                "Anjas Fadel Andika", "Arya Saputra", "Baiq Sepa Putri Aprilia", "Dika Sibnu Sejarah", 
+                "Darumdia", "Fhaqihun Alif", "Gina Asri", "I Putu Diva Yudistira Pramana", 
+                "Irfan Humaidi", "Martin", "Muhammad Irhamdi", "M. Kholid Saputra", 
+                "Reni Alfiana", "Ruhasa", "Ruslan", "Sari Ayu", "Suel", "Ahmad Zaki"
+            ],
+            "XII TPTU": []
+        };
+
+        const INITIAL_SUBJECTS = [
+            "Dasar-Dasar Teknik",
+            "Instalasi Tenaga Listrik",
+            "Jaringan Tenaga Listrik",
+            "Teknik Pendingin & Tata Udara",
+            "Pekerjaan Dasar Elektromekanik",
+            "Matematika Terapan",
+            "Proyek Kreatif & Kewirausahaan"
+        ];
+
+        let classData = {};
+        let subjectList = [];
+        let currentScores = {}; // Key: studentName -> { attendance: 'Hadir', score: 80 }
+        let currentKKM = 75;
+        let webhookUrl = '';
+
+        // Attendance Option Badges
+        const ATTENDANCE_TYPES = [
+            { id: 'Hadir', label: 'Hadir', short: 'H', bg: 'bg-emerald-500', text: 'text-white', activeBg: 'ring-2 ring-emerald-600 bg-emerald-600' },
+            { id: 'Sakit', label: 'Sakit', short: 'S', bg: 'bg-amber-500', text: 'text-white', activeBg: 'ring-2 ring-amber-600 bg-amber-600' },
+            { id: 'Izin', label: 'Izin', short: 'I', bg: 'bg-blue-500', text: 'text-white', activeBg: 'ring-2 ring-blue-600 bg-blue-600' },
+            { id: 'Alpa', label: 'Alpa', short: 'A', bg: 'bg-rose-500', text: 'text-white', activeBg: 'ring-2 ring-rose-600 bg-rose-600' },
+            { id: 'Bolos', label: 'Bolos', short: 'B', bg: 'bg-purple-600', text: 'text-white', activeBg: 'ring-2 ring-purple-700 bg-purple-700' },
+            { id: 'Telat', label: 'Telat', short: 'T', bg: 'bg-orange-500', text: 'text-white', activeBg: 'ring-2 ring-orange-600 bg-orange-600' }
+        ];
+
+        window.onload = function() {
+            // Load persistent settings or fallback to initial defaults
+            const savedClasses = localStorage.getItem('sp_class_data');
+            classData = savedClasses ? JSON.parse(savedClasses) : INITIAL_CLASSES;
+
+            const savedSubjects = localStorage.getItem('sp_subjects');
+            subjectList = savedSubjects ? JSON.parse(savedSubjects) : INITIAL_SUBJECTS;
+
+            webhookUrl = localStorage.getItem('sp_webhook_url') || '';
+            document.getElementById('webhookUrlInput').value = webhookUrl;
+
+            // Set today's date in picker
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('inputDate').value = today;
+
+            // Populate class dropdown
+            populateClassDropdown();
+            populateSubjectDropdown();
+
+            // Load assessment for selected date and class
+            handleDateOrClassChange();
+        };
+
+        function populateClassDropdown() {
+            const selectClass = document.getElementById('selectClass');
+            selectClass.innerHTML = '';
+            Object.keys(classData).forEach(cls => {
+                const option = document.createElement('option');
+                option.value = cls;
+                option.textContent = cls;
+                selectClass.appendChild(option);
+            });
+        }
+
+        function populateSubjectDropdown() {
+            const selectSubject = document.getElementById('selectSubject');
+            selectSubject.innerHTML = '';
+            subjectList.forEach(subj => {
+                const option = document.createElement('option');
+                option.value = subj;
+                option.textContent = subj;
+                selectSubject.appendChild(option);
+            });
+        }
+
+        function handleDateOrClassChange() {
+            const dateVal = document.getElementById('inputDate').value;
+            const classVal = document.getElementById('selectClass').value;
+            const mapelVal = document.getElementById('selectSubject').value;
+
+            // Format date header display
+            if (dateVal) {
+                const d = new Date(dateVal);
+                const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
+                document.getElementById('headerDateDisplay').textContent = d.toLocaleDateString('id-ID', options);
+            }
+
+            if (!classVal) return;
+
+            // Storage key for specific Date + Class + Mapel combination
+            const storageKey = `sp_record_${dateVal}_${classVal}_${mapelVal}`;
+            const savedRecord = localStorage.getItem(storageKey);
+
+            const autoLoadBanner = document.getElementById('autoLoadBanner');
+
+            if (savedRecord) {
+                // Auto-load saved assessment!
+                const parsed = JSON.parse(savedRecord);
+                currentScores = parsed.scores || {};
+                document.getElementById('inputActivity').value = parsed.activity || '';
+                if (parsed.kkm) {
+                    currentKKM = parsed.kkm;
+                    document.getElementById('inputKKM').value = currentKKM;
+                }
+                autoLoadBanner.classList.remove('hidden');
+            } else {
+                // Initialize clean assessment for this class
+                currentScores = {};
+                document.getElementById('inputActivity').value = '';
+                autoLoadBanner.classList.add('hidden');
+
+                // Default attendance Hadir & score 75 for all students
+                const students = classData[classVal] || [];
+                students.forEach(std => {
+                    currentScores[std] = {
+                        attendance: 'Hadir',
+                        score: 75
+                    };
+                });
+            }
+
+            renderStudentList();
+        }
+
+        function updateKKM(val) {
+            currentKKM = parseInt(val) || 75;
+            renderStudentList();
+            saveCurrentDataToCache();
+        }
+
+        function renderStudentList() {
+            const classVal = document.getElementById('selectClass').value;
+            const students = classData[classVal] || [];
+            const container = document.getElementById('studentListContainer');
+
+            document.getElementById('studentCountBadge').textContent = students.length;
+
+            if (students.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white border border-dashed border-slate-300 rounded-2xl p-8 text-center text-slate-400 text-xs">
+                        <i class="fa-solid fa-users-slash text-3xl mb-2 text-slate-300"></i>
+                        <p class="font-bold">Belum ada data siswa di kelas ini.</p>
+                        <p class="text-[11px] text-slate-400 mt-1">Tambahkan siswa melalui menu Pengaturan (ikon roda gigi).</p>
+                    </div>
+                `;
+                document.getElementById('classAverageScore').textContent = '0';
+                return;
+            }
+
+            let html = '';
+            let totalScore = 0;
+            let gradedCount = 0;
+
+            students.forEach((student, index) => {
+                // Ensure data structure exists
+                if (!currentScores[student]) {
+                    currentScores[student] = { attendance: 'Hadir', score: 75 };
+                }
+
+                const studentData = currentScores[student];
+                const score = studentData.score;
+                const attendance = studentData.attendance;
+                const isAbsent = attendance !== 'Hadir';
+
+                if (!isAbsent) {
+                    totalScore += score;
+                    gradedCount++;
+                }
+
+                const isPass = score >= currentKKM;
+                const kkmBadgeColor = isAbsent 
+                    ? 'bg-slate-100 text-slate-500 border-slate-200' 
+                    : (isPass ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-rose-100 text-rose-800 border-rose-300');
+                const kkmText = isAbsent ? 'Tidak Dinilai' : (isPass ? 'TUNTAS' : 'REMEDIAL');
+
+                html += `
+                    <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm space-y-3 transition hover:shadow-md">
+                        <!-- Top Header: Number & Large Student Name -->
+                        <div class="flex justify-between items-center gap-2">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <span class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 font-black text-xs flex items-center justify-center border border-emerald-200 shrink-0">
+                                    ${index + 1}
+                                </span>
+                                <h3 class="font-black text-slate-900 text-lg leading-snug tracking-tight truncate">${student}</h3>
+                            </div>
+                            <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full border shrink-0 ${kkmBadgeColor}">
+                                ${kkmText}
+                            </span>
+                        </div>
+
+                        <!-- Attendance Radio Options -->
+                        <div>
+                            <div class="grid grid-cols-6 gap-1 bg-slate-50 p-1 rounded-xl border border-slate-200">
+                                ${ATTENDANCE_TYPES.map(att => {
+                                    const isSelected = attendance === att.id;
+                                    const btnStyle = isSelected 
+                                        ? `${att.activeBg} text-white font-extrabold shadow-sm scale-105` 
+                                        : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 font-semibold';
+                                    return `
+                                        <button type="button" 
+                                                onclick="setAttendance('${student.replace(/'/g, "\\'")}', '${att.id}')" 
+                                                class="py-1.5 rounded-lg text-[11px] transition-all duration-150 flex flex-col items-center justify-center ${btnStyle}">
+                                            <span>${att.short}</span>
+                                            <span class="text-[8px] opacity-80 hidden sm:inline">${att.label}</span>
+                                        </button>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Score Slider Section (Disabled if absent) -->
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-2 ${isAbsent ? 'opacity-40 pointer-events-none' : ''}">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="font-bold text-slate-600 text-[11px] flex items-center gap-1">
+                                    <i class="fa-solid fa-sliders text-emerald-600"></i> Nilai Siswa
+                                </span>
+                                <div class="flex items-center gap-1">
+                                    <span class="text-lg font-black ${isPass ? 'text-emerald-600' : 'text-rose-600'}">${score}</span>
+                                    <span class="text-[10px] text-slate-400 font-semibold">/100</span>
+                                </div>
+                            </div>
+
+                            <input type="range" min="0" max="100" step="1" value="${score}" 
+                                   oninput="updateStudentScore('${student.replace(/'/g, "\\'")}', this.value)"
+                                   class="w-full accent-emerald-600">
+
+                            <!-- Preset Quick Value Buttons -->
+                            <div class="flex justify-between gap-1 pt-1">
+                                ${[60, 70, currentKKM, 80, 85, 90, 100].map(val => `
+                                    <button type="button" onclick="updateStudentScore('${student.replace(/'/g, "\\'")}', ${val})"
+                                            class="flex-1 py-1 rounded text-[10px] font-extrabold ${score == val ? 'bg-emerald-600 text-white' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'}">
+                                        ${val}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            // Calculate class average
+            const avg = gradedCount > 0 ? (totalScore / gradedCount).toFixed(1) : '0';
+            document.getElementById('classAverageScore').textContent = avg;
+        }
+
+        function setBulkScore(val) {
+            const scoreVal = parseInt(val);
+            if (isNaN(scoreVal) || scoreVal < 0 || scoreVal > 100) return;
+
+            const classVal = document.getElementById('selectClass').value;
+            const students = classData[classVal] || [];
+
+            if (!students.length) return;
+
+            students.forEach(student => {
+                if (!currentScores[student]) {
+                    currentScores[student] = { attendance: 'Hadir', score: scoreVal };
+                } else {
+                    currentScores[student].score = scoreVal;
+                }
+            });
+
+            renderStudentList();
+            saveCurrentDataToCache();
+            showToast(`Semua nilai siswa diset ke ${scoreVal}`, 'wand-magic-sparkles');
+        }
+
+        function applyManualBulkScore() {
+            const input = document.getElementById('inputBulkScore');
+            const val = parseInt(input.value);
+            if (isNaN(val) || val < 0 || val > 100) {
+                showToast('Masukkan angka nilai antara 0 - 100', 'triangle-exclamation');
+                return;
+            }
+            setBulkScore(val);
+        }
+
+        function setAttendance(student, attType) {
+            if (!currentScores[student]) {
+                currentScores[student] = { attendance: 'Hadir', score: 75 };
+            }
+            currentScores[student].attendance = attType;
+            renderStudentList();
+            saveCurrentDataToCache();
+        }
+
+        function updateStudentScore(student, val) {
+            if (!currentScores[student]) {
+                currentScores[student] = { attendance: 'Hadir', score: 75 };
+            }
+            currentScores[student].score = parseInt(val) || 0;
+            renderStudentList();
+            saveCurrentDataToCache();
+        }
+
+        function saveCurrentDataToCache() {
+            const dateVal = document.getElementById('inputDate').value;
+            const classVal = document.getElementById('selectClass').value;
+            const mapelVal = document.getElementById('selectSubject').value;
+            const activityVal = document.getElementById('inputActivity').value;
+
+            if (!dateVal || !classVal) return;
+
+            const storageKey = `sp_record_${dateVal}_${classVal}_${mapelVal}`;
+            const record = {
+                date: dateVal,
+                class: classVal,
+                subject: mapelVal,
+                activity: activityVal,
+                kkm: currentKKM,
+                scores: currentScores,
+                updatedAt: new Date().toISOString()
+            };
+
+            localStorage.setItem(storageKey, JSON.stringify(record));
+        }
+
+        function resetCurrentScores() {
+            if (confirm('Apakah Anda yakin ingin mereset input nilai untuk kelas dan tanggal ini?')) {
+                const dateVal = document.getElementById('inputDate').value;
+                const classVal = document.getElementById('selectClass').value;
+                const mapelVal = document.getElementById('selectSubject').value;
+
+                const storageKey = `sp_record_${dateVal}_${classVal}_${mapelVal}`;
+                localStorage.removeItem(storageKey);
+                handleDateOrClassChange();
+                showToast('Nilai berhasil direset', 'check');
+            }
+        }
+
+        function shareToWhatsApp() {
+            const dateVal = document.getElementById('inputDate').value;
+            const classVal = document.getElementById('selectClass').value;
+            const mapelVal = document.getElementById('selectSubject').value;
+            const activityVal = document.getElementById('inputActivity').value || '-';
+            const students = classData[classVal] || [];
+
+            if (!students.length) {
+                showToast('Tidak ada data siswa untuk dibagikan', 'triangle-exclamation');
+                return;
+            }
+
+            // Format date into Indonesian locale
+            const dateObj = new Date(dateVal);
+            const formattedDate = dateObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+            let countHadir = 0, countSakit = 0, countIzin = 0, countAlpa = 0, countBolos = 0, countTelat = 0;
+            let totalNilai = 0, totalLulus = 0, totalRemed = 0;
+
+            let studentDetailsText = "";
+
+            students.forEach((student, idx) => {
+                const data = currentScores[student] || { attendance: 'Hadir', score: 75 };
+                const att = data.attendance;
+                const sc = data.score;
+
+                let attIcon = "🟢";
+                if (att === "Hadir") { countHadir++; attIcon = "🟢"; }
+                else if (att === "Sakit") { countSakit++; attIcon = "🟡"; }
+                else if (att === "Izin") { countIzin++; attIcon = "🔵"; }
+                else if (att === "Alpa") { countAlpa++; attIcon = "🔴"; }
+                else if (att === "Bolos") { countBolos++; attIcon = "🟣"; }
+                else if (att === "Telat") { countTelat++; attIcon = "🟠"; }
+
+                if (att === "Hadir") {
+                    totalNilai += sc;
+                    if (sc >= currentKKM) totalLulus++;
+                    else totalRemed++;
+                    studentDetailsText += `${idx + 1}. ${student} → ${sc} (${sc >= currentKKM ? 'Tuntas' : 'Remed'})\n`;
+                } else {
+                    studentDetailsText += `${idx + 1}. ${student} → ${attIcon} ${att}\n`;
+                }
+            });
+
+            const avgScore = countHadir > 0 ? (totalNilai / countHadir).toFixed(1) : 0;
+
+            const textWA = 
+`📊 *REKAP PENILAIAN PEMBELAJARAN*
+👨‍🏫 *Guru:* Zaenul Fanani
+🏫 *Kelas:* ${classVal}
+📚 *Mapel:* ${mapelVal}
+📅 *Tanggal:* ${formattedDate}
+📌 *Kegiatan:* ${activityVal}
+🎯 *KKM:* ${currentKKM}
+
+----------------------------------
+👥 *DAFTAR NILAI SISWA:*
+${studentDetailsText}
+----------------------------------
+📈 *RINGKASAN KEHADIRAN & NILAI:*
+• Hadir: ${countHadir} | Sakit: ${countSakit} | Izin: ${countIzin}
+• Alpa: ${countAlpa} | Bolos: ${countBolos} | Telat: ${countTelat}
+• Rata-rata Nilai: *${avgScore}*
+• Tuntas: *${totalLulus} siswa* | Remedial: *${totalRemed} siswa*
+
+_Sistem Penilaian Kelas - Zaenul Fanani_`;
+
+            const encodedWA = encodeURIComponent(textWA);
+            window.open(`https://wa.me/?text=${encodedWA}`, '_blank');
+        }
+
+        async function sendToSpreadsheet() {
+            if (!webhookUrl) {
+                showToast('URL Google Sheets belum diatur! Buka menu Pengaturan.', 'triangle-exclamation');
+                openSettingsModal();
+                switchModalTab('webhook');
+                return;
+            }
+
+            const dateVal = document.getElementById('inputDate').value;
+            const classVal = document.getElementById('selectClass').value;
+            const mapelVal = document.getElementById('selectSubject').value;
+            const activityVal = document.getElementById('inputActivity').value || '-';
+            const students = classData[classVal] || [];
+
+            if (!students.length) {
+                showToast('Tidak ada data siswa di kelas ini', 'triangle-exclamation');
+                return;
+            }
+
+            const btn = document.getElementById('btnSendSpreadsheet');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-lg"></i> <span>Mengirim...</span>`;
+            btn.disabled = true;
+
+            const payload = {
+                date: dateVal,
+                className: classVal,
+                subject: mapelVal,
+                activity: activityVal,
+                teacher: "Zaenul Fanani",
+                kkm: currentKKM,
+                students: students.map(s => ({
+                    name: s,
+                    attendance: (currentScores[s] && currentScores[s].attendance) || 'Hadir',
+                    score: (currentScores[s] && currentScores[s].score) || 0,
+                    status: ((currentScores[s] && currentScores[s].score) || 0) >= currentKKM ? 'Tuntas' : 'Remedial'
+                }))
+            };
+
+            try {
+                // Gunakan mode no-cors dengan body text/plain agar tidak diblokir Preflight CORS
+                await fetch(webhookUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(payload)
+                });
+
+                showToast('Data berhasil dikirim ke Google Spreadsheet!', 'circle-check');
+            } catch (err) {
+                console.error(err);
+                showToast('Gagal mengirim data. Cek koneksi / Webhook URL.', 'triangle-exclamation');
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        }
+
+        function openSettingsModal() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+            populateManageClassSelect();
+            loadStudentsForManagement();
+            renderManagedSubjects();
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        function switchModalTab(tabName) {
+            document.getElementById('tabStudents').classList.add('hidden');
+            document.getElementById('tabSubjects').classList.add('hidden');
+            document.getElementById('tabWebhook').classList.add('hidden');
+
+            document.getElementById('tabBtn1').className = "py-2 px-3 font-bold border-b-2 border-transparent text-slate-500 flex-1 text-center";
+            document.getElementById('tabBtn2').className = "py-2 px-3 font-bold border-b-2 border-transparent text-slate-500 flex-1 text-center";
+            document.getElementById('tabBtn3').className = "py-2 px-3 font-bold border-b-2 border-transparent text-slate-500 flex-1 text-center";
+
+            if (tabName === 'students') {
+                document.getElementById('tabStudents').classList.remove('hidden');
+                document.getElementById('tabBtn1').className = "py-2 px-3 font-bold border-b-2 border-emerald-600 text-emerald-600 flex-1 text-center";
+            } else if (tabName === 'subjects') {
+                document.getElementById('tabSubjects').classList.remove('hidden');
+                document.getElementById('tabBtn2').className = "py-2 px-3 font-bold border-b-2 border-emerald-600 text-emerald-600 flex-1 text-center";
+            } else if (tabName === 'webhook') {
+                document.getElementById('tabWebhook').classList.remove('hidden');
+                document.getElementById('tabBtn3').className = "py-2 px-3 font-bold border-b-2 border-emerald-600 text-emerald-600 flex-1 text-center";
+            }
+        }
+
+        function populateManageClassSelect() {
+            const select = document.getElementById('manageClassSelect');
+            select.innerHTML = '';
+            Object.keys(classData).forEach(cls => {
+                const opt = document.createElement('option');
+                opt.value = cls;
+                opt.textContent = cls;
+                select.appendChild(opt);
+            });
+        }
+
+        function loadStudentsForManagement() {
+            const cls = document.getElementById('manageClassSelect').value;
+            const container = document.getElementById('managedStudentList');
+            if (!cls || !classData[cls]) return;
+
+            const list = classData[cls];
+            if (list.length === 0) {
+                container.innerHTML = `<p class="p-3 text-slate-400 text-center">Belum ada siswa.</p>`;
+                return;
+            }
+
+            container.innerHTML = list.map((std, idx) => `
+                <div class="flex justify-between items-center p-2 hover:bg-slate-50">
+                    <span class="font-medium text-slate-700">${idx + 1}. ${std}</span>
+                    <button onclick="removeStudentFromClass('${cls}', ${idx})" class="text-rose-500 hover:text-rose-700 px-2">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function addStudentToClass() {
+            const cls = document.getElementById('manageClassSelect').value;
+            const nameInput = document.getElementById('newStudentName');
+            const name = nameInput.value.trim();
+
+            if (!name) return;
+
+            if (!classData[cls]) classData[cls] = [];
+            classData[cls].push(name);
+            localStorage.setItem('sp_class_data', JSON.stringify(classData));
+
+            nameInput.value = '';
+            loadStudentsForManagement();
+            populateClassDropdown();
+            handleDateOrClassChange();
+            showToast(`Siswa "${name}" berhasil ditambahkan`, 'user-plus');
+        }
+
+        function removeStudentFromClass(cls, idx) {
+            if (confirm('Hapus siswa ini dari daftar kelas?')) {
+                classData[cls].splice(idx, 1);
+                localStorage.setItem('sp_class_data', JSON.stringify(classData));
+                loadStudentsForManagement();
+                handleDateOrClassChange();
+                showToast('Siswa berhasil dihapus', 'trash');
+            }
+        }
+
+        function addNewClassPrompt() {
+            const name = prompt('Masukkan nama kelas baru (contoh: XII TK 1):');
+            if (name && name.trim()) {
+                const cleanName = name.trim();
+                if (!classData[cleanName]) {
+                    classData[cleanName] = [];
+                    localStorage.setItem('sp_class_data', JSON.stringify(classData));
+                    populateClassDropdown();
+                    populateManageClassSelect();
+                    document.getElementById('manageClassSelect').value = cleanName;
+                    loadStudentsForManagement();
+                    showToast(`Kelas "${cleanName}" berhasil dibuat`, 'school');
+                } else {
+                    alert('Nama kelas tersebut sudah ada.');
+                }
+            }
+        }
+
+        function renderManagedSubjects() {
+            const container = document.getElementById('managedSubjectList');
+            container.innerHTML = subjectList.map((subj, idx) => `
+                <div class="flex justify-between items-center p-2 hover:bg-slate-50">
+                    <span class="font-medium text-slate-700">${subj}</span>
+                    <button onclick="removeSubject(${idx})" class="text-rose-500 hover:text-rose-700 px-2">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function addSubject() {
+            const input = document.getElementById('newSubjectName');
+            const name = input.value.trim();
+            if (!name) return;
+
+            subjectList.push(name);
+            localStorage.setItem('sp_subjects', JSON.stringify(subjectList));
+            input.value = '';
+            renderManagedSubjects();
+            populateSubjectDropdown();
+            showToast('Mata pelajaran berhasil ditambahkan', 'book');
+        }
+
+        function removeSubject(idx) {
+            if (confirm('Hapus mata pelajaran ini?')) {
+                subjectList.splice(idx, 1);
+                localStorage.setItem('sp_subjects', JSON.stringify(subjectList));
+                renderManagedSubjects();
+                populateSubjectDropdown();
+                showToast('Mata pelajaran dihapus', 'trash');
+            }
+        }
+
+        function saveWebhookUrl() {
+            webhookUrl = document.getElementById('webhookUrlInput').value.trim();
+            localStorage.setItem('sp_webhook_url', webhookUrl);
+            showToast('URL Google Apps Script tersimpan!', 'circle-check');
+        }
+
+        function copyAppsScriptCode() {
+            const code = `function doPost(e) {
+  try {
+    var contents = e.postData ? e.postData.contents : "";
+    if (!contents) {
+      return ContentService.createTextOutput(JSON.stringify({result: "error", message: "No data received"}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    var data = JSON.parse(contents);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (!ss) {
+      return ContentService.createTextOutput(JSON.stringify({result: "error", message: "Spreadsheet tidak ditemukan. Pastikan Apps Script dibuka dari menu Ekstensi di Spreadsheet."}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Setiap kelas dipisahkan per Sheet
+    var sheetName = data.className || "Umum";
+    var sheet = ss.getSheetByName(sheetName);
+    
+    if (!sheet) {
+      sheet = ss.insertSheet(sheetName);
+      // Buat Baris Header Judul di Kolom A
+      sheet.getRange(1, 1).setValue("NAMA SISWA / TANGGAL").setFontWeight("bold").setBackground("#16a34a").setFontColor("#ffffff");
+      sheet.getRange(2, 1).setValue("Mata Pelajaran (KKM)").setFontWeight("bold").setBackground("#dcfce7").setFontColor("#14532d");
+      sheet.getRange(3, 1).setValue("Keterangan Kegiatan").setFontWeight("bold").setBackground("#f1f5f9").setFontColor("#334155");
+    }
+
+    // 1. Dapatkan daftar nama siswa yang sudah ada di Kolom A (mulai baris 4)
+    var lastRow = Math.max(sheet.getLastRow(), 3);
+    var existingStudents = [];
+    if (lastRow >= 4) {
+      var studentValues = sheet.getRange(4, 1, lastRow - 3, 1).getValues();
+      for (var i = 0; i < studentValues.length; i++) {
+        existingStudents.push(String(studentValues[i][0]).trim());
+      }
+    }
+
+    // Masukkan siswa baru ke Kolom A jika belum ada
+    data.students.forEach(function(std) {
+      var stdName = String(std.name).trim();
+      if (existingStudents.indexOf(stdName) === -1) {
+        existingStudents.push(stdName);
+        var newRow = existingStudents.length + 3; // Baris 4, 5, 6...
+        sheet.getRange(newRow, 1).setValue(stdName);
+      }
+    });
+
+    // 2. Cari apakah kolom untuk Tanggal + Mapel ini sudah ada (agar bisa overwrite jika dikirim ulang)
+    var lastCol = sheet.getLastColumn();
+    var targetCol = -1;
+    var sessionTitle = data.date;
+    var subTitle = data.subject + " (KKM: " + data.kkm + ")";
+    var activityTitle = data.activity || "-";
+
+    if (lastCol >= 2) {
+      var headersRow1 = sheet.getRange(1, 2, 1, lastCol - 1).getValues()[0];
+      var headersRow2 = sheet.getRange(2, 2, 1, lastCol - 1).getValues()[0];
+      for (var c = 0; c < headersRow1.length; c++) {
+        var dVal = String(headersRow1[c]);
+        var mVal = String(headersRow2[c]);
+        if (dVal === sessionTitle && mVal === subTitle) {
+          targetCol = c + 2; // Kolom ditemukan
+          break;
+        }
+      }
+    }
+
+    // Jika belum ada, buat kolom baru di paling kanan (mengisi ke samping)
+    if (targetCol === -1) {
+      targetCol = Math.max(lastCol + 1, 2);
+      sheet.getRange(1, targetCol).setValue(sessionTitle).setFontWeight("bold").setBackground("#16a34a").setFontColor("#ffffff");
+      sheet.getRange(2, targetCol).setValue(subTitle).setFontWeight("bold").setBackground("#dcfce7").setFontColor("#14532d");
+      sheet.getRange(3, targetCol).setValue(activityTitle).setFontStyle("italic").setBackground("#f1f5f9").setFontColor("#334155");
+    } else {
+      // Update keterangan kegiatan jika diperbarui
+      sheet.getRange(3, targetCol).setValue(activityTitle);
+    }
+
+    // 3. Isi nilai/kehadiran siswa pada kolom target
+    data.students.forEach(function(std) {
+      var stdName = String(std.name).trim();
+      var rowIndex = existingStudents.indexOf(stdName);
+      if (rowIndex !== -1) {
+        var rowNum = rowIndex + 4;
+        var displayVal = std.attendance === 'Hadir' ? std.score : (std.score + " (" + std.attendance + ")");
+        if (std.attendance !== 'Hadir') {
+          displayVal = std.attendance + " (" + std.score + ")";
+        }
+        sheet.getRange(rowNum, targetCol).setValue(displayVal);
+      }
+    });
+
+    // Rapikan lebar kolom
+    sheet.autoResizeColumns(1, targetCol);
+
+    return ContentService.createTextOutput(JSON.stringify({result: "success"}))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({result: "error", message: err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}`;
+
+            const textArea = document.createElement("textarea");
+            textArea.value = code;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+
+            showToast('Kode Google Apps Script Baru Berhasil Disalin!', 'copy');
+        }
+
+        function showToast(message, iconName = 'circle-check') {
+            const toast = document.getElementById('toast');
+            const msg = document.getElementById('toastMsg');
+            const icon = document.getElementById('toastIcon');
+
+            msg.textContent = message;
+            icon.className = `fa-solid fa-${iconName} text-emerald-400`;
+
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
