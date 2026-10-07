@@ -429,9 +429,9 @@
         };
 
         const INITIAL_SUBJECTS = [
-            "Dasar-Dasar Teknik Energi Terbarukan",
-            "Gambar Teknik Listrik",
-            "Kreativitas, Inovasi & Kewirausahaan"
+            "DDTET",
+            "GTL",
+            "KIK"
         ];
 
         let classData = {};
@@ -644,6 +644,8 @@
                             </div>
 
                             <input type="range" id="slider-${index}" min="0" max="100" step="1" value="${score}" 
+                                   onpointerdown="preventTrackJump(event, this)"
+                                   ontouchstart="preventTrackJump(event, this)"
                                    oninput="handleSliderInput(${index}, '${safeStudentName}', this.value)"
                                    onchange="saveCurrentDataToCache()"
                                    class="w-full accent-emerald-600 cursor-pointer">
@@ -652,7 +654,7 @@
                             <div class="flex justify-between gap-1 pt-1">
                                 ${[60, 70, currentKKM, 80, 85, 90, 100].map(val => `
                                     <button type="button" onclick="updateStudentScore('${safeStudentName}', ${index}, ${val})"
-                                            class="flex-1 py-1 rounded text-[10px] font-extrabold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100">
+                                            class="flex-1 py-1 rounded text-[10px] font-extrabold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 active:bg-emerald-100 transition">
                                         ${val}
                                     </button>
                                 `).join('')}
@@ -667,6 +669,25 @@
             updateClassAverage();
         }
 
+        function preventTrackJump(e, sliderEl) {
+            const rect = sliderEl.getBoundingClientRect();
+            const min = parseFloat(sliderEl.min) || 0;
+            const max = parseFloat(sliderEl.max) || 100;
+            const val = parseFloat(sliderEl.value) || 0;
+            
+            const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+            if (clientX === undefined || rect.width === 0) return;
+
+            // Calculate exact horizontal thumb center (accounting for thumb radius padding ~12px)
+            const thumbX = rect.left + 12 + ((val - min) / (max - min)) * (rect.width - 24);
+            const dist = Math.abs(clientX - thumbX);
+            
+            // Allow dragging only when touching directly on or near the thumb button (~28px threshold)
+            if (dist > 28) {
+                e.preventDefault();
+            }
+        }
+
         function handleSliderInput(index, student, val) {
             const numericVal = parseInt(val) || 0;
             if (!currentScores[student]) {
@@ -674,7 +695,7 @@
             }
             currentScores[student].score = numericVal;
 
-            // Update nilai angka & warna langsung secara instant tanpa merestart element
+            // Update score display and KKM badge directly without DOM re-render
             const scoreValEl = document.getElementById(`score-val-${index}`);
             const isPass = numericVal >= currentKKM;
 
@@ -683,7 +704,7 @@
                 scoreValEl.className = `text-lg font-black ${isPass ? 'text-emerald-600' : 'text-rose-600'}`;
             }
 
-            // Update badge KKM
+            // Update KKM badge status
             const badgeEl = document.getElementById(`kkm-badge-${index}`);
             if (badgeEl && currentScores[student].attendance === 'Hadir') {
                 badgeEl.textContent = isPass ? 'TUNTAS' : 'REMEDIAL';
@@ -758,15 +779,6 @@
                 currentScores[student] = { attendance: 'Hadir', score: 75 };
             }
             currentScores[student].attendance = attType;
-            renderStudentList();
-            saveCurrentDataToCache();
-        }
-
-        function updateStudentScore(student, val) {
-            if (!currentScores[student]) {
-                currentScores[student] = { attendance: 'Hadir', score: 75 };
-            }
-            currentScores[student].score = parseInt(val) || 0;
             renderStudentList();
             saveCurrentDataToCache();
         }
